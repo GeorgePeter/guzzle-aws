@@ -25,7 +25,9 @@ class GetReportListIterator extends ResourceIterator {
     }
 
     # Prefer max_count over limit, but use limit if it is supplied.
-    if(!in_array('max_count', array_keys($this->data)) && $this->data['limit'] > 0) {
+    if(!in_array('max_count', array_keys($this->data)) &&
+       array_key_exists('limit', $this->data)
+       && $this->data['limit'] > 0) {
       $this->command->set('max_count', $this->data['limit']);
     }
 
