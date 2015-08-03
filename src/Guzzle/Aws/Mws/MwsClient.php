@@ -60,7 +60,7 @@ class MwsClient extends AbstractClient
             'base_url' => 'https://mws.amazonservices.com/',
             'version' => self::VERSION
         );
-        $required = array('access_key', 'secret_key', 'merchant_id', 'marketplace_id', 'application_name', 'application_version');
+        $required = array('access_key', 'secret_key', 'merchant_id', 'auth_token', 'application_name', 'application_version');
         $config = Collection::fromConfig($config, $defaults, $required);
 
         // Filter our the Timestamp and Signature query string values from cache

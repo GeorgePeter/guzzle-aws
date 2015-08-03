@@ -57,7 +57,7 @@ class AbstractMwsCommand extends AbstractCommand
         $config = $this->getClient()->getConfig();
         $this->request->getQuery()
             ->set('AWSAccessKeyId', $config['access_key'])
-            ->set('Marketplace', $config['marketplace_id'])
+            ->set('MWSAuthToken', $config['auth_token'])
             ->set('Merchant', $config['merchant_id']);
 
         // Add any additional method params
