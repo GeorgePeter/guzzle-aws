@@ -6,6 +6,8 @@
 
 namespace Guzzle\Aws\Mws\Command;
 
+use Guzzle\Http\Message\RequestInterface;
+
 /**
  * The ListOrders operation returns a list of orders created or updated during a time frame that you specify. You
  * define that time frame using the CreatedAfter parameter or the LastUpdatedAfter parameter. You must use one
@@ -35,6 +37,8 @@ namespace Guzzle\Aws\Mws\Command;
  */
 class ListOrders extends AbstractIterableMwsOrderCommand
 {
+    protected $requestMethod = RequestInterface::POST;
+
     /**
      * {@inheritdoc}
      */
@@ -52,9 +56,8 @@ class ListOrders extends AbstractIterableMwsOrderCommand
     {
         // Default to the current marketplace
         parent::build();
-        $marketplace = $this->getRequest()->getQuery()->get('Marketplace');
-        $this->setMarketplaceId(array($marketplace));
-        parent::build();
+        $this->getRequest()->setPath('/Orders/2013-09-01');
+        $this->set('Version','2013-09-01');
     }
 
     /**

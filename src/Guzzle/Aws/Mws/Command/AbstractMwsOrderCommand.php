@@ -25,7 +25,8 @@ class AbstractMwsOrderCommand extends AbstractMwsCommand
     {
         parent::build();
         // Change path
-        $this->getRequest()->setPath('/Orders/2011-01-01');
+        $this->getRequest()->setPath('/Orders/2013-09-01');
+        $this->set('Version','2013-09-01');
 
         // Copy Merchant parameter to SellerId, because Amazon is stupid and can't even follow their own standards
         $this->getRequest()->getQuery()->set('SellerId', $this->getRequest()->getQuery()->get('Merchant'));

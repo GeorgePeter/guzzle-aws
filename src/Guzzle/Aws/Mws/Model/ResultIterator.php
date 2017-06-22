@@ -7,6 +7,8 @@
 
 namespace Guzzle\Aws\Mws\Model;
 
+use Guzzle\Http\Client;
+use Guzzle\Service\Command\CommandInterface;
 use Guzzle\Service\Resource\ResourceIterator;
 
 /**
@@ -21,6 +23,14 @@ use Guzzle\Service\Resource\ResourceIterator;
 class ResultIterator extends ResourceIterator
 {
 
+    public function __construct(CommandInterface $command, array $data = [])
+    {
+        $this->resources = array_key_exists('resources', $data) ? $data['resources'] : false;
+        $this->nextToken = array_key_exists('next_token', $data) ? $data['next_token'] : false;
+        parent::__construct($command,$data);
+    }
+
+
     /**
      * Send request to get the next page of results
      */
@@ -29,12 +39,28 @@ class ResultIterator extends ResourceIterator
         // Throttle requests by waiting 1 second
         sleep(1);
 
-      $command = $this->command->setNextToken($this->getNextToken());
-      $response = $this->command->execute();
-      $this->processResult($response);
+      if($this->resources === null){
+          $response      = $this->command->execute();
+          $this->nextToken = array_key_exists('next_token', $this->data) ? $this->data['next_token'] : false;
+          return $response->get('resources');
+      }
+      else if($this->getNextToken()!=false) {
+
+          $command      = $this->command;
+          $client       = $command->getClient();
+          $next_command = $client->getCommand($this->data['next_command']);
+          $next_command->setNextToken($this->getNextToken());
+          $this->command = $next_command;
+          $response      = $this->command->execute();
+
+          return $this->processResult($response);
+      }
+        return null;
     }
 
-    /**
+
+
+    /**138689654124
      * Process results, add
      *
      * @param SimpleXMLElement $result
@@ -49,8 +75,7 @@ class ResultIterator extends ResourceIterator
         }
         // @codeCoverageIgnoreEnd
 
-        $this->resourceList = $records;
-        $this->retrievedCount += count($this->resourceList);
+        $this->retrievedCount += count($this->resources);
         $this->currentIndex = 0;
 
         // @codeCoverageIgnoreStart
@@ -60,6 +85,7 @@ class ResultIterator extends ResourceIterator
             $this->nextToken = null;
         }
         // @codeCoverageIgnoreEnd
+        return $records;
     }
 
 }

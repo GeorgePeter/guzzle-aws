@@ -9,7 +9,7 @@ namespace Guzzle\Aws\Mws\Command;
 
 use Guzzle\Service\Command\AbstractCommand;
 use Guzzle\Http\Message\RequestInterface;
-use Guzzle\Common\Inflection\Inflector;
+use Guzzle\Inflection\Inflector;
 use Guzzle\Aws\Mws\Model\CsvReport;
 use Guzzle\Aws\Mws\Model\ResultIterator;
 
@@ -57,19 +57,20 @@ class AbstractMwsCommand extends AbstractCommand
         $config = $this->getClient()->getConfig();
         $this->request->getQuery()
             ->set('AWSAccessKeyId', $config['access_key'])
-            ->set('Marketplace', $config['marketplace_id'])
+            ->set('MWSAuthToken', $config['auth_token'])
             ->set('Merchant', $config['merchant_id']);
 
         // Add any additional method params
         foreach ($this->data as $param => $value) {
-            if ($param == 'headers') {
+            if (stripos($param,'Command') !== FALSE) {
                 continue;
             }
             $param = ucfirst(Inflector::getDefault()->camel($param));
             if (is_array($value)) {
                 // It's an array, convert to amazon array naming convention
                 foreach ($value as $listName => $listValues) {
-                    foreach ($listValues as $i => $listValue) {
+
+                    foreach ((array)$listValues as $i => $listValue) {
                         $this->request->getQuery()->set($param . '.' . $listName . '.' . ($i + 1), $listValue);
                     }
                 }
@@ -84,6 +85,7 @@ class AbstractMwsCommand extends AbstractCommand
                 // It's a scalar
                 $this->request->getQuery()->set($param, $value);
             }
+            $this->request->getQuery();
         }
     }
 

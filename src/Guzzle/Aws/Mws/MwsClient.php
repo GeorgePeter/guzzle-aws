@@ -6,8 +6,9 @@
 
 namespace Guzzle\Aws\Mws;
 
-use Guzzle\Service\Inspector;
-use Guzzle\Http\Plugin\ExponentialBackoffPlugin;
+use \Guzzle\Common\Collection;
+use Guzzle\Plugin\Backoff\BackoffPlugin;
+use Guzzle\Plugin\Backoff\HttpBackoffStrategy;
 use Guzzle\Aws\AbstractClient;
 use Guzzle\Aws\QueryStringAuthPlugin;
 use Guzzle\Aws\Signature\SignatureV2;
@@ -59,8 +60,8 @@ class MwsClient extends AbstractClient
             'base_url' => 'https://mws.amazonservices.com/',
             'version' => self::VERSION
         );
-        $required = array('access_key', 'secret_key', 'merchant_id', 'marketplace_id', 'application_name', 'application_version');
-        $config = Inspector::prepareConfig($config, $defaults, $required);
+        $required = array('access_key', 'secret_key', 'merchant_id', 'auth_token', 'application_name', 'application_version');
+        $config = Collection::fromConfig($config, $defaults, $required);
 
         // Filter our the Timestamp and Signature query string values from cache
         $config->set('cache.key_filter', 'query=Timestamp, Signature');
@@ -82,11 +83,9 @@ class MwsClient extends AbstractClient
         );
 
         // Retry 500 and 503 failures, up to 3 times
-        $client->getEventDispatcher()->addSubscriber(new ExponentialBackoffPlugin(3, null, function($try){
-            // @codeCoverageIgnoreStart
-            return 60;
-            // @codeCoverageIgnoreEnd
-        }));
+        $client->getEventDispatcher()->addSubscriber(BackoffPlugin::getExponentialBackoff(3, array_merge(
+            HttpBackoffStrategy::getDefaultFailureCodes(), array(429)
+        )));
 
         return $client;
     }
